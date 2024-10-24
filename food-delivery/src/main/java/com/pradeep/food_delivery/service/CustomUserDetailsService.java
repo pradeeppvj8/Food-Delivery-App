@@ -4,10 +4,15 @@ import com.pradeep.food_delivery.enums.UserRole;
 import com.pradeep.food_delivery.model.User;
 import com.pradeep.food_delivery.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
@@ -24,11 +29,8 @@ public class CustomUserDetailsService implements UserDetailsService {
         }
 
         UserRole userRole = user.getUserRole();
-
-        if(userRole == null) {
-            userRole = UserRole.ROLE_CUSTOMER;
-        }
-
-        return null;
+        List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
+        grantedAuthorities.add(new SimpleGrantedAuthority(userRole.toString()));
+        return new org.springframework.security.core.userdetails.User(user.getFullName(), user.getPassword(), grantedAuthorities);
     }
 }
