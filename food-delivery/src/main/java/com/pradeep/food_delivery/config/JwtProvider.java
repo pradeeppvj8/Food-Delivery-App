@@ -3,6 +3,7 @@ package com.pradeep.food_delivery.config;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Service
+@Slf4j
 public class JwtProvider {
 
     private SecretKey key = Keys.hmacShaKeyFor(JwtConstants.SECRET_KEY.getBytes());
@@ -32,6 +34,8 @@ public class JwtProvider {
     }
 
     public String getEmailFromJwtToken(String jwt) {
+        jwt = jwt.substring(7);
+        log.info("Getting email from JWT - " + jwt);
         Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(jwt).getBody();
         return String.valueOf(claims.get("email"));
     }

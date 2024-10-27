@@ -1,6 +1,7 @@
 package com.pradeep.food_delivery.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.pradeep.food_delivery.dto.RestaurantDTO;
 import com.pradeep.food_delivery.enums.UserRole;
 import jakarta.persistence.*;
@@ -23,6 +24,7 @@ public class User {
 
     private String email;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     private String fullName;
