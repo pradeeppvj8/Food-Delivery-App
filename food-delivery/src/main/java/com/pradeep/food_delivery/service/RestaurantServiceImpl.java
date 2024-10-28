@@ -6,6 +6,7 @@ import com.pradeep.food_delivery.model.Restaurant;
 import com.pradeep.food_delivery.model.User;
 import com.pradeep.food_delivery.repository.AddressRepository;
 import com.pradeep.food_delivery.repository.RestaurantRepository;
+import com.pradeep.food_delivery.repository.UserRepository;
 import com.pradeep.food_delivery.request.CreateRestaurantRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,7 +19,7 @@ import java.util.List;
 public class RestaurantServiceImpl implements RestaurantService {
     private final RestaurantRepository restaurantRepository;
     private final AddressRepository addressRepository;
-    private final UserService userService;
+    private final UserRepository userRepository;
 
     @Override
     public Restaurant createRestaurant(CreateRestaurantRequest createRestaurantRequest, User user) {
@@ -50,41 +51,75 @@ public class RestaurantServiceImpl implements RestaurantService {
             restaurant.setDescription(updateRestaurantRequest.getDescription());
         }
 
-        return null;
+        if (updateRestaurantRequest.getName() != null) {
+            restaurant.setName(updateRestaurantRequest.getName());
+        }
+
+        if (updateRestaurantRequest.getAddress() != null) {
+            restaurant.setAddress(updateRestaurantRequest.getAddress());
+        }
+
+        if (updateRestaurantRequest.getContactInformation() != null) {
+            restaurant.setContactInformation(updateRestaurantRequest.getContactInformation());
+        }
+
+        if (updateRestaurantRequest.getOpeningHours() != null) {
+            restaurant.setOpeningHours(updateRestaurantRequest.getOpeningHours());
+        }
+
+        if (updateRestaurantRequest.getImages() != null) {
+            restaurant.setImages(updateRestaurantRequest.getImages());
+        }
+
+        return restaurantRepository.save(restaurant);
     }
 
     @Override
     public void deleteRestaurant(Long restaurantId) throws Exception {
-
+        Restaurant restaurant = findRestaurantById(restaurantId);
+        restaurantRepository.delete(restaurant);
     }
 
     @Override
     public List<Restaurant> getAllRestaurants() {
-        return List.of();
+        return restaurantRepository.findAll();
     }
 
     @Override
-    public List<Restaurant> searchRestaurants() {
-        return List.of();
+    public List<Restaurant> searchRestaurants(String keyWord) {
+        return restaurantRepository.findBySearchQuery(keyWord);
     }
 
     @Override
     public Restaurant findRestaurantById(Long restaurantId) throws Exception {
-        return null;
+        return restaurantRepository.findById(restaurantId).orElseThrow(() -> new Exception("Restaurant not found with ID - " + restaurantId));
     }
 
     @Override
     public Restaurant getRestaurantByUserId(Long userId) throws Exception {
-        return null;
+        return restaurantRepository.findByOwnerId(userId).orElseThrow(() -> new Exception("Restaurant not found with User ID - " + userId));
     }
 
     @Override
-    public RestaurantDTO addToFavourites(Long restaurantId, User user) {
-        return null;
+    public RestaurantDTO addToFavourites(Long restaurantId, User user) throws Exception {
+        Restaurant restaurant = findRestaurantById(restaurantId);
+        RestaurantDTO restaurantDTO = new RestaurantDTO();
+        restaurantDTO.setId(restaurant.getId());
+        restaurantDTO.setDescription(restaurant.getDescription());
+        restaurantDTO.setImages(restaurant.getImages());
+        restaurantDTO.setTitle(restaurant.getName());
+
+        if (user.getFavourites() != null && !user.getFavourites().contains(restaurantDTO)) {
+            user.getFavourites().add(restaurantDTO);
+        }
+        userRepository.save(user);
+        return restaurantDTO;
     }
 
     @Override
     public Restaurant updateRestaurantStatus(Long restaurantId) throws Exception {
-        return null;
+        Restaurant restaurant = findRestaurantById(restaurantId);
+        restaurant.setOpen(!restaurant.isOpen());
+        return restaurantRepository.save(restaurant);
     }
 }

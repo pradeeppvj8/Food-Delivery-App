@@ -17,13 +17,13 @@ public interface RestaurantService {
 
     List<Restaurant> getAllRestaurants();
 
-    List<Restaurant> searchRestaurants();
+    List<Restaurant> searchRestaurants(String keyWord);
 
     Restaurant findRestaurantById(Long restaurantId) throws Exception;
 
     Restaurant getRestaurantByUserId(Long userId) throws Exception;
 
-    RestaurantDTO addToFavourites(Long restaurantId, User user);
+    RestaurantDTO addToFavourites(Long restaurantId, User user) throws Exception;
 
     Restaurant updateRestaurantStatus(Long restaurantId) throws Exception;
 }
