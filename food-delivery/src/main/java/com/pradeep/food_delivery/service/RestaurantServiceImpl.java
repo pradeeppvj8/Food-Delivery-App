@@ -10,9 +10,11 @@ import com.pradeep.food_delivery.repository.UserRepository;
 import com.pradeep.food_delivery.request.CreateRestaurantRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -56,7 +58,13 @@ public class RestaurantServiceImpl implements RestaurantService {
         }
 
         if (updateRestaurantRequest.getAddress() != null) {
-            restaurant.setAddress(updateRestaurantRequest.getAddress());
+            restaurant.getAddress().setStreetAddress(updateRestaurantRequest.getAddress().getStreetAddress());
+            restaurant.getAddress().setCity(updateRestaurantRequest.getAddress().getCity());
+            restaurant.getAddress().setCountry(updateRestaurantRequest.getAddress().getCountry());
+            restaurant.getAddress().setPostalCode(updateRestaurantRequest.getAddress().getPostalCode());
+            restaurant.getAddress().setStateProvince(updateRestaurantRequest.getAddress().getStateProvince());
+            Address address = addressRepository.save(restaurant.getAddress());
+            restaurant.setAddress(address);
         }
 
         if (updateRestaurantRequest.getContactInformation() != null) {
@@ -108,10 +116,22 @@ public class RestaurantServiceImpl implements RestaurantService {
         restaurantDTO.setDescription(restaurant.getDescription());
         restaurantDTO.setImages(restaurant.getImages());
         restaurantDTO.setTitle(restaurant.getName());
+        List<RestaurantDTO> userFavs = user.getFavourites();
 
-        if (user.getFavourites() != null && !user.getFavourites().contains(restaurantDTO)) {
-            user.getFavourites().add(restaurantDTO);
+
+        if (!CollectionUtils.isEmpty(userFavs)) {
+            Optional<RestaurantDTO> userFav = userFavs.stream().filter(restaurantDTO1 -> restaurantDTO1.getId().equals(restaurantId)).findFirst();
+
+            if(userFav.isPresent()) {
+                userFavs.remove(userFav.get());
+            } else {
+                userFavs.add(restaurantDTO);
+            }
+        } else {
+            userFavs.add(restaurantDTO);
         }
+
+        user.setFavourites(userFavs);
         userRepository.save(user);
         return restaurantDTO;
     }
