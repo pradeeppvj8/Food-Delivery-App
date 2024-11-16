@@ -11,7 +11,7 @@ public interface FoodService {
 
     Food createFood(CreateFoodRequest createFoodRequest, Category category, Restaurant restaurant);
 
-    void deleteFound(Long foodId) throws Exception;
+    void deleteFood(Long foodId) throws Exception;
 
     List<Food> getRestaurantsFood(Long restaurantId, boolean isVegetarian, boolean isNonVeg, boolean isSeasonal, String foodCategory);
 

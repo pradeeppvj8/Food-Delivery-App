@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -36,27 +37,64 @@ public class FoodServiceImpl implements FoodService {
     }
 
     @Override
-    public void deleteFound(Long foodId) throws Exception {
+    public void deleteFood(Long foodId) throws Exception {
         foodRepository.deleteById(foodId);
     }
 
     @Override
     public List<Food> getRestaurantsFood(Long restaurantId, boolean isVegetarian, boolean isNonVeg, boolean isSeasonal, String foodCategory) {
-        return List.of();
+        List<Food> foods = foodRepository.findByRestaurantId(restaurantId);
+
+        if (isVegetarian) {
+            foods = filterByVegetarian(foods);
+        }
+
+        if (isNonVeg) {
+            foods = filterByNonVeg(foods);
+        }
+
+        if (isSeasonal) {
+            foods = filterBySeasonal(foods);
+        }
+
+        if (foodCategory != null && !foodCategory.isEmpty()) {
+            foods = filterByFoodCategory(foods, foodCategory);
+        }
+
+        return foods;
+    }
+
+    private List<Food> filterByFoodCategory(List<Food> foods, String foodCategory) {
+        return foods.stream().filter(food -> food.getCategory() != null && food.getCategory().getName().equals(foodCategory))
+                .collect(Collectors.toList());
+    }
+
+    private List<Food> filterBySeasonal(List<Food> foods) {
+        return foods.stream().filter(Food::isSeasonal).collect(Collectors.toList());
+    }
+
+    private List<Food> filterByNonVeg(List<Food> foods) {
+        return foods.stream().filter(food -> !food.isVegetarian()).collect(Collectors.toList());
+    }
+
+    private List<Food> filterByVegetarian(List<Food> foods) {
+        return foods.stream().filter(Food::isVegetarian).collect(Collectors.toList());
     }
 
     @Override
     public List<Food> searchFood(String keyWord) {
-        return List.of();
+        return foodRepository.searchFood(keyWord);
     }
 
     @Override
     public Food findFoodById(Long foodId) throws Exception {
-        return null;
+        return foodRepository.findById(foodId).orElseThrow(() -> new Exception("Food doesn't exist"));
     }
 
     @Override
     public Food updateFoodAvailability(Long foodId) throws Exception {
-        return null;
+        Food food = findFoodById(foodId);
+        food.setAvailable(!food.isAvailable());
+        return foodRepository.save(food);
     }
 }
